@@ -55,7 +55,7 @@ struct ContentView: View {
 ```
 
 ## Export Images
-The Export delivery model generates two images: the original image and a resized version with the specified dimensions. Both images maintain a 1:1 aspect ratio.
+The Export delivery model generates two UIImages: the original image and a resized version with the specified dimensions. Both images maintain a 1:1 aspect ratio.
 
 ## Example project
 Explore the example project included in this package to learn more about how the ProfileImageEditor works.
