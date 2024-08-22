@@ -292,8 +292,6 @@ extension IC.Views.EditorViewController: UIScrollViewDelegate {
         viewModel.dispatch(.registerPosition(for: imageView.model, withValue: scrollView.contentOffset, andFrame: imageView.frame))
     }
 
-
-
     private func updateSelectedIndexIfNeeded(with scrollView: UIScrollView) {
         guard
             !viewModel.isScrolling,
@@ -382,8 +380,15 @@ private extension IC.Views.EditorViewController {
         itemsSubscriber = viewModel.$items.sink { [weak self] items in
             // Needs to be queued sinces the published value has not yet been updated in the viewModel
             DispatchQueue.main.async { [weak self] in
-                guard let self = self, items.count != self.containers.count else { return }
+                let currentModels = self?.containers
+                    .compactMap { ($0 as? IC.Views.UIViews.ZoomView)?.subviews.first as? IC.Views.UIViews.ImageView }
+                    .compactMap { $0.model }.map { $0.id } ?? []
+
+                // Don't re render if the list hasn't changed
+                guard let self = self, items.map({ $0.id }) != currentModels else { return }
+
                 self.render()
+
                 self.handleSelectedIndexChanged(withValue: self.viewModel.selectedIndex, animated: false)
             }
         }

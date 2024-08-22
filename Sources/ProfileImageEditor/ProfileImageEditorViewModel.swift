@@ -34,14 +34,14 @@ public class ProfileImageEditorViewModel: ObservableObject, ProfileImageEditorVi
     private(set) var cropSize: CGSize = .zero
     private var subscriber: Cancellable?
     @Published private(set) var shouldPresent = true
-    @Published private(set) var imageState: ImageState = .empty
+    @Published private(set) var sourceImage: ProfileImageModel?
     @Published var imageSelection: PhotosPickerItem? = nil {
         didSet {
             if let imageSelection {
-                let progress = loadTransferable(from: imageSelection)
-                imageState = .loading(progress)
+                _ = loadTransferable(from: imageSelection)
+
             } else {
-                imageState = .empty
+                sourceImage = nil
             }
         }
     }
@@ -49,7 +49,7 @@ public class ProfileImageEditorViewModel: ObservableObject, ProfileImageEditorVi
 
 public extension ProfileImageEditorViewModel {
     var canBeExported: Bool {
-        imageState.isSuccess
+        sourceImage != nil
     }
 
     func dispatch(_ action: Actions) {
@@ -72,7 +72,7 @@ extension ProfileImageEditorViewModel {
     @MainActor func dispatch(_ action: Actions) async {
         switch action {
         case .restart:
-            imageState = .empty
+            sourceImage = nil
             imageSelection = nil
             shouldPresent = true
 
@@ -105,7 +105,8 @@ extension ProfileImageEditorViewModel {
         case imageInvalid
     }
 
-    struct ProfileImageModel: Transferable {
+    struct ProfileImageModel: Transferable, Identifiable, Equatable {
+        var id: UUID = UUID()
         let image: Image
 
         static var transferRepresentation: some TransferRepresentation {
@@ -129,12 +130,13 @@ private extension ProfileImageEditorViewModel {
                 }
                 switch result {
                 case let .success(profileImage?):
-                    self.imageState = .success(profileImage.image)
+                    self.sourceImage = profileImage
+                    self.shouldPresent = false
 
                 case .success(nil):
-                    self.imageState = .empty
-                case let .failure(error):
-                    self.imageState = .failure(error)
+                    self.sourceImage = nil
+                case .failure:
+                    self.sourceImage = nil
                 }
             }
         }
