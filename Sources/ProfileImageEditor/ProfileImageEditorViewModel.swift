@@ -34,7 +34,7 @@ public class ProfileImageEditorViewModel: ObservableObject, ProfileImageEditorVi
     private(set) var cropSize: CGSize = .zero
     private var subscriber: Cancellable?
     @Published private(set) var shouldPresent = true
-    @Published private(set) var sourceImage: ProfileImageModel?
+    @Published public private(set) var sourceImage: ProfileImageModel?
     @Published var imageSelection: PhotosPickerItem? = nil {
         didSet {
             if let imageSelection {
@@ -105,11 +105,11 @@ extension ProfileImageEditorViewModel {
         case imageInvalid
     }
 
-    struct ProfileImageModel: Transferable, Identifiable, Equatable {
-        var id: UUID = UUID()
+    public struct ProfileImageModel: Transferable, Identifiable, Equatable {
+        public var id: UUID = UUID()
         let image: Image
 
-        static var transferRepresentation: some TransferRepresentation {
+        public static var transferRepresentation: some TransferRepresentation {
             DataRepresentation(importedContentType: .image) { data in
                 guard let uiImage = UIImage(data: data) else {
                     throw ProfileImageError.importFailed
